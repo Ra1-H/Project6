@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700|Open+Sans:400,700|Montserrat:400,700|Bangers&display=swap">
+    <title>Simon Says</title>
+</head>
+
+<style>
+    * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background-color: black;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+        position: relative;
+    }
+
+    .game_color_box {
+        background-color: white;
+        border-radius: 10px;
+        height: 500px;
+        width: 500px;
+        padding: 30px;
+        align-items: center;
+        justify-content: space-around;
+        gap: 30px;
+    }
+
+    .game_header {
+        color: white;
+        font-size: 30px;
+    }
+
+    .box {
+        width: 180px;
+        height: 180px;
+        border-radius: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 8px;
+        color: white;
+    }
+
+    .hover-enabled .green_box:hover {
+        background-color: rgb(26, 153, 104);
+    }
+
+    .hover-enabled .red_box:hover {
+        background-color: rgb(153, 64, 26);
+    }
+
+    .hover-enabled .yellow_box:hover {
+        background-color: rgb(134, 153, 26);
+    }
+
+    .hover-enabled .blue_box:hover {
+        background-color: rgb(26, 87, 153);
+    }
+
+    .green_box {
+        background-color: rgb(57, 193, 141);
+    }
+
+    .red_box {
+        background-color: rgb(197, 92, 47);
+    }
+
+    .yellow_box {
+        background-color: rgb(184, 207, 52);
+    }
+
+    .blue_box {
+        background-color: rgb(45, 121, 201);
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .start_btn {
+        border: none;
+        border-radius: 8px;
+        background-color: #1b1a1a;
+        height: 35px;
+        width: 200px;
+        color: rgb(255, 255, 255);
+    }
+
+    .greener_btn {
+        background-color: #224522 !important;
+        height: 50px !important;
+        width: 300px !important;
+        color: #27e427 !important;
+        font-size: 60px !important;
+    }
+
+    .user_info {
+        width: auto;
+        height: 50px;
+
+    }
+
+    .user_name {
+        color: green;
+    }
+
+    .level {
+        color: green;
+    }
+
+    .timer {
+        color: green;
+    }
+
+    .userEntry {
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+    }
+
+    .sign_in {
+        border: none;
+        border-radius: 8px;
+        background-color: #31a731;
+        height: 35px;
+        width: 90px;
+        color: rgb(255, 255, 255);
+    }
+
+
+    .correct_highlight {
+        border: 4px solid green;
+        box-shadow: 4px 4px 4px green;
+    }
+
+    .wrong_highlight {
+        border: 4px solid red;
+        box-shadow: 4px 4px 4px red;
+    }
+
+    .highlight {
+        border: 4px solid rgb(207, 176, 52);
+        box-shadow: 4px 4px 4px rgb(207, 176, 52)
+    }
+</style>
+
+<body>
+    <!-- take user info form alert box, then store current level -->
+    <div class="user_info absolute top-4 right-4 ">
+        <div class="user_name">User:</div>
+        <div class="level">Level:</div>
+        <div class="timer hidden"></div>
+    </div>
+    <div class="game_container flex flex-col justify-between items-center gap-20">
+        <div class="game_header flex justify-center items-center"><button
+                class="start_btn flex justify-center items-center" type="button"
+                onclick="startOver();blinkGreen();">start</button>
+        </div>
+        <div class="game_color_box flex flex-wrap">
+            <div class="box green_box " data-index="0">green 0</div>
+            <div class="box red_box " data-index="1">red 1</div>
+            <div class="box yellow_box " data-index="2">yellow 2</div>
+            <div class="box blue_box " data-index="3">blue 3</div>
+        </div>
+    </div>
+
+    <div id="UserModal" class="modal flex flex-col justify-center items-center">
+        <div class="flex flex-col modal_content gap-10 ">
+            <h2 class="text-center">Enter your name </h2>
+            <div class="userEntry flex">
+                <div class="w-1/2"><textarea id="user_entry" placeholder="user here..." class="w-full"></textarea></div>
+                <div><button class="sign_in" onclick="signIn()">sign in</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalMessage" class="modal flex flex-col justify-center items-center hidden">
+        <div class="flex flex-col modal_content justify-center items-center gap-10 ">
+            <h2 class="modal_message"></h2>
+        </div>
+    </div>
+
+
+</body>
+
+<script>
+
+    let userName;
+    let correctBoxesSequence = [];
+    let userClicksSequence = [];
+    let level;
+    let listenerInit = false;
+    let timeRemaining;
+
+
+    //working
+    function AddRandomIndexToSequence() {
+        let randomBox = Math.floor(Math.random() * 4);
+        correctBoxesSequence.push(randomBox);
+        let xx = correctBoxesSequence;
+        console.log(xx);
+
+    }
+
+    //working
+    function displayCorrectSequence() {
+        for (let i = 0; i < correctBoxesSequence.length; i++) {
+            setTimeout(function () { highlightTHEBox(correctBoxesSequence[i]); }, i * 1000);
+        }
+    }
+
+    //working
+    function highlightTHEBox(index) {
+        let box = document.querySelector(`.box[data-index="${index}"]`);
+        box.classList.add("highlight");
+        setTimeout(function () { box.classList.remove("highlight"); }, 500);
+    }
+
+
+    //working
+    //asks for username and displays it on screen
+    function signIn() {
+        document.body.classList.remove('hover-enabled');
+        userName = document.querySelector('#user_entry').value;
+        document.querySelector(".user_name").innerHTML = "User: " + userName;
+        document.querySelector("#UserModal").classList.add("hidden");
+    }
+
+
+
+    //working
+    //on each sign in,start over from level 0
+    //empty the correctSequence and clickedSequencee
+    //display current level
+    //start the level
+    function startOver() {
+        document.body.classList.remove('hover-enabled');
+        level = 0;
+        timeRemaining = 0;
+        correctBoxesSequence = [];
+        userClicksSequence = [];
+        setTimeout(function () { displayLevel(); startNewLevel(); }, 1000);
+
+    }
+
+    //working
+    //level starts by adding a nw random num to he correctSequence abd display this sequence for the user
+    //computer must allow user to click boxes by adding eventListeners to them,with conditions
+    function startNewLevel() {
+        document.body.classList.add('hover-enabled');
+        console.log("startNewLevel:");
+
+        timeRemaining += 5;
+
+        startTimer(timeRemaining);
+
+        level++;
+
+        displayLevel();
+        userClicksSequence = [];
+        AddRandomIndexToSequence();
+        displayCorrectSequence();
+        if (!listenerInit) {
+            addEventListenersToBoxes();
+            listenerInit = true;
+        }
+
+
+    }
+
+    //working
+    //addEventListenersToBoxes take all boxes.add click event to them and handles the click 
+    //by applying the handleClick function on the clicked index
+    function addEventListenersToBoxes() {
+        document.querySelectorAll('.box').forEach(function (box, index) {
+            box.addEventListener('click', function () {
+                handleUserClick(index);
+            });
+        });
+
+    }
+
+
+    //each clicked box is pushed to the userClicksSequence,checked and highlighted correspondingly
+    //the checkUserClick is the function that checks each click
+    // function handleUserClick(index) {
+
+    //     console.log("Check User Click index:" + index);
+
+    //     userClicksSequence.push(index);
+    //     let isCorrect = checkUserClick();
+    //     console.log("User Click Val:" + isCorrect);
+    //     if (isCorrect) {
+    //         highlightBox(index);
+    //         if (userClicksSequence.length == correctBoxesSequence.length) {
+    //             setTimeout(function () { win = true; startNewLevel(); }, 1000);
+    //         }
+    //     }
+    //     else {
+    //         highlightBox(index, true);
+    //         endGame();
+    //         if (userClicksSequence.length == correctBoxesSequence.length) {
+    //             endGame();
+    //         }
+    //     }
+
+    // }
+
+    function handleUserClick(index) {
+        console.log("Check User Click index:" + index);
+
+        userClicksSequence.push(index);
+        let isCorrect = checkUserClick();
+        console.log("User Click Val:" + isCorrect);
+
+        if (!isCorrect) {
+            highlightBox(index, true);
+            setTimeout(function () { endGame(); }, 1000);
+            return;
+        }
+
+        highlightBox(index);
+
+        if (userClicksSequence.length === correctBoxesSequence.length) {
+            setTimeout(function () { startNewLevel(); }, 1000);
+        }
+    }
+
+
+
+    function checkUserClick() {
+        for (let i = 0; i < userClicksSequence.length; i++) {
+            if (userClicksSequence[i] !== correctBoxesSequence[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    function highlightBox(index, isIncorrect = false) {
+        let box = document.querySelector(`.box[data-index="${index}"]`);
+
+        if (isIncorrect) {
+            box.classList.add("wrong_highlight");
+        }
+        else {
+            box.classList.add("correct_highlight");
+
+        }
+
+        setTimeout(function () {
+            box.classList.remove("correct_highlight", "wrong_highlight");
+        }, 500);
+
+    }
+
+
+    function endGame() {
+        clearTimeout(timeoutId);
+        document.querySelector(".modal_message").innerHTML = "<span class='funky-text'>Game over! Final Level: Level " + level + "</span> <br> <span font-size:40px'>Click 'Start' to start again</span>";
+        document.querySelector("#modalMessage").classList.remove('hidden');
+        setTimeout(function () { document.querySelector("#modalMessage").classList.add('hidden'); }, 2000);
+        level = 0;
+        correctBoxesSequence = [];
+        userClicksSequence = [];
+        displayLevel();
+        // alert("Game over! Your final level:" + level);
+
+    }
+
+    function displayLevel() {
+        document.querySelector('.level').innerText = 'Level: ' + level;
+    }
+
+    function blinkGreen() {
+        console.log("executing")
+        document.querySelector(".start_btn").classList.add('greener_btn');
+        setTimeout(function () { document.querySelector(".start_btn").classList.remove('greener_btn'); }, 500);
+    }
+
+
+    let timeoutId;
+
+    function startTimer(timeRemaining) {
+        let functionTime = timeRemaining;
+        document.querySelector('.timer').classList.remove('hidden'); // Show the timer
+
+        function updateTimer() {
+            // Update timer display
+            document.querySelector('.timer').innerText = 'Time: ' + functionTime + 's';
+
+            // Check if the timer has reached 0
+            if (functionTime === 0) {
+                // Handle timer expiration (e.g., end the game)
+                document.querySelector('.timer').innerText = 'Time\'s up!';
+                endGame();
+            } else {
+                // Decrease the time remaining
+                functionTime--;
+
+                // Call the function recursively after 1000ms (1 second)
+                timeoutId = setTimeout(updateTimer, 1000);
+            }
+        }
+
+        // Clear the existing timeout if it exists
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+
+        // Start the countdown timer
+        updateTimer();
+    }
+
+
+</script>
+
+<style>
+    .modal {
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal_content {
+        background-color: #fefefe;
+        border-radius: 8px;
+        padding: 20px;
+        width: 50%;
+        height: auto;
+    }
+
+    .modal_message {
+        text-align: center;
+    }
+
+    .funky-text {
+        font-family: 'Bangers', cursive;
+        font-size: 48px;
+        font-weight: bold;
+        color: #b31427;
+        text-transform: uppercase;
+        letter-spacing: 4px;
+        text-shadow: 2px 2px 4px rgba(83, 13, 13, 0.5);
+    }
+</style>
+
+</html>

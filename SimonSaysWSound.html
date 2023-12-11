@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700|Open+Sans:400,700|Montserrat:400,700|Bangers&display=swap">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Roboto:400,700|Open+Sans:400,700|Montserrat:400,700|Bangers&display=swap">
     <title>Simon Says</title>
 </head>
 
@@ -16,6 +17,13 @@
         box-sizing: border-box;
     }
 
+    @font-face {
+        font-family: 'Orbitron';
+        src: url('fonts/Orbitron-VariableFont_wght.ttf') format('ttf');
+        font-weight: normal;
+        font-style: normal;
+    }
+
     body {
         background-color: black;
         width: 100vw;
@@ -23,7 +31,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        font-family: 'Courier New', monospace;
+        font-family: 'Orbitron', sans-serif;
         font-weight: bold;
         position: relative;
     }
@@ -33,10 +41,17 @@
         border-radius: 10px;
         height: 500px;
         width: 500px;
-        padding: 30px;
+        justify-content: center;
         align-items: center;
-        justify-content: space-around;
-        gap: 30px;
+    }
+
+    .box_container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 50%;
+        height: 50%;
+        padding: 10px;
     }
 
     .game_header {
@@ -45,14 +60,21 @@
     }
 
     .box {
+        outline: 2px solid #3f3f3f;
         width: 180px;
         height: 180px;
         border-radius: 10px;
+        box-shadow: 2px 1px 2px rgb(55, 55, 55);
         display: flex;
         justify-content: center;
         align-items: center;
         padding: 8px;
         color: white;
+    }
+
+    .shrink {
+        width: 160px;
+        height: 160px;
     }
 
     .hover-enabled .green_box:hover {
@@ -72,19 +94,19 @@
     }
 
     .green_box {
-        background-color: rgb(57, 193, 141);
+        background-color: rgb(53, 240, 122);
     }
 
     .red_box {
-        background-color: rgb(197, 92, 47);
+        background-color: rgb(234, 103, 47);
     }
 
     .yellow_box {
-        background-color: rgb(184, 207, 52);
+        background-color: rgb(230, 227, 75);
     }
 
     .blue_box {
-        background-color: rgb(45, 121, 201);
+        background-color: rgb(62, 145, 233);
     }
 
     .hidden {
@@ -172,21 +194,34 @@
                 onclick="startOver();blinkGreen();">start</button>
         </div>
         <div class="game_color_box flex flex-wrap">
-            <div class="box green_box " data-index="0">green 0</div>
-            <div class="box red_box " data-index="1">red 1</div>
-            <div class="box yellow_box " data-index="2">yellow 2</div>
-            <div class="box blue_box " data-index="3">blue 3</div>
+            <div class="box_container">
+                <div class="box green_box " data-index="0"></div>
+            </div>
+            <div class="box_container">
+                <div class="box red_box " data-index="1"></div>
+            </div>
+            <div class="box_container">
+                <div class="box yellow_box " data-index="2"></div>
+            </div>
+            <div class="box_container">
+                <div class="box blue_box " data-index="3"></div>
+            </div>
         </div>
     </div>
 
     <div id="UserModal" class="modal flex flex-col justify-center items-center">
         <div class="flex flex-col modal_content gap-10 ">
             <h2 class="text-center">Enter your name </h2>
+            <div class="w-full flex justify-center items-center text-center text-gray-500">Follow the colors and
+                remember the whole sequence to click over it again </div>
             <div class="userEntry flex">
-                <div class="w-1/2"><textarea id="user_entry" placeholder="user here..." class="w-full"></textarea></div>
+                <div class="w-1/2 flex justify-center items-center"><textarea id="user_entry" placeholder="user here..."
+                        class="w-full"></textarea></div>
                 <div><button class="sign_in" onclick="signIn()">sign in</button></div>
             </div>
+
         </div>
+
     </div>
 
     <div id="modalMessage" class="modal flex flex-col justify-center items-center hidden">
@@ -194,6 +229,11 @@
             <h2 class="modal_message"></h2>
         </div>
     </div>
+
+    <audio id="greenSound" src="sounds/fa-78409.mp3"></audio>
+    <audio id="redSound" src="sounds/la-80237.mp3"></audio>
+    <audio id="yellowSound" src="sounds/mi-80239.mp3"></audio>
+    <audio id="blueSound" src="sounds/re-78500.mp3"></audio>
 
 
 </body>
@@ -206,6 +246,71 @@
     let level;
     let listenerInit = false;
     let timeRemaining;
+
+    //box sounds
+    function playBoxSound(index) {
+        let audioElement;
+
+        switch (index) {
+            case 0:
+                audioElement = document.getElementById('greenSound');
+                break;
+            case 1:
+                audioElement = document.getElementById('redSound');
+                break;
+            case 2:
+                audioElement = document.getElementById('yellowSound');
+                break;
+            case 3:
+                audioElement = document.getElementById('blueSound');
+                break;
+            default:
+                break;
+        }
+
+        if (audioElement) {
+            // Set the playback speed to 2 times faster
+            audioElement.playbackRate = 3;
+
+            // Play the audio
+            audioElement.play();
+        }
+
+
+    }
+
+
+
+
+    //make boxes shrink when clicked
+    document.querySelector('.green_box').addEventListener('click', function () {
+        document.querySelector('.green_box').classList.add('shrink');
+
+        setTimeout(function () {
+            document.querySelector('.green_box').classList.remove('shrink');
+        }, 500);
+    });
+    document.querySelector('.red_box').addEventListener('click', function () {
+        document.querySelector('.red_box').classList.add('shrink');
+
+        setTimeout(function () {
+            document.querySelector('.red_box').classList.remove('shrink');
+        }, 500);
+    });
+    document.querySelector('.yellow_box').addEventListener('click', function () {
+        document.querySelector('.yellow_box').classList.add('shrink');
+
+        setTimeout(function () {
+            document.querySelector('.yellow_box').classList.remove('shrink');
+        }, 500);
+    });
+    document.querySelector('.blue_box').addEventListener('click', function () {
+        document.querySelector('.blue_box').classList.add('shrink');
+
+        setTimeout(function () {
+            document.querySelector('.blue_box').classList.remove('shrink');
+        }, 500);
+    });
 
 
     //working
@@ -228,6 +333,9 @@
     function highlightTHEBox(index) {
         let box = document.querySelector(`.box[data-index="${index}"]`);
         box.classList.add("highlight");
+
+        playBoxSound(index);
+
         setTimeout(function () { box.classList.remove("highlight"); }, 500);
     }
 
@@ -298,28 +406,6 @@
 
     //each clicked box is pushed to the userClicksSequence,checked and highlighted correspondingly
     //the checkUserClick is the function that checks each click
-    // function handleUserClick(index) {
-
-    //     console.log("Check User Click index:" + index);
-
-    //     userClicksSequence.push(index);
-    //     let isCorrect = checkUserClick();
-    //     console.log("User Click Val:" + isCorrect);
-    //     if (isCorrect) {
-    //         highlightBox(index);
-    //         if (userClicksSequence.length == correctBoxesSequence.length) {
-    //             setTimeout(function () { win = true; startNewLevel(); }, 1000);
-    //         }
-    //     }
-    //     else {
-    //         highlightBox(index, true);
-    //         endGame();
-    //         if (userClicksSequence.length == correctBoxesSequence.length) {
-    //             endGame();
-    //         }
-    //     }
-
-    // }
 
     function handleUserClick(index) {
         console.log("Check User Click index:" + index);
@@ -327,6 +413,8 @@
         userClicksSequence.push(index);
         let isCorrect = checkUserClick();
         console.log("User Click Val:" + isCorrect);
+
+        playBoxSound(index);
 
         if (!isCorrect) {
             highlightBox(index, true);
@@ -337,7 +425,12 @@
         highlightBox(index);
 
         if (userClicksSequence.length === correctBoxesSequence.length) {
-            setTimeout(function () { startNewLevel(); }, 1000);
+            /////NEW NEW NEW
+            document.querySelector(".modal_message").innerHTML = "<span class='funky-text2'> You won Level " + level + "</span>";
+            document.querySelector("#modalMessage").classList.remove('hidden');
+            setTimeout(function () { document.querySelector("#modalMessage").classList.add('hidden'); }, 800);
+            ///NEW NEW NEW
+            setTimeout(function () { startNewLevel(); }, 2000);
         }
     }
 
@@ -381,6 +474,7 @@
         correctBoxesSequence = [];
         userClicksSequence = [];
         displayLevel();
+        document.querySelector('.timer').innerText = '';
         // alert("Game over! Your final level:" + level);
 
     }
@@ -460,10 +554,18 @@
         font-family: 'Bangers', cursive;
         font-size: 48px;
         font-weight: bold;
-        color: #b31427;
+        color: #ff001e;
         text-transform: uppercase;
         letter-spacing: 4px;
-        text-shadow: 2px 2px 4px rgba(83, 13, 13, 0.5);
+        text-shadow: 2px 2px 4px rgba(148, 0, 0, 0.5);
+    }
+
+    .funky-text2 {
+        font-family: 'Bangers', cursive;
+        font-size: 15px;
+        color: #42ac00;
+        letter-spacing: 4px;
+        text-shadow: 2px 2px 4px rgba(21, 86, 0, 0.5);
     }
 </style>
 
